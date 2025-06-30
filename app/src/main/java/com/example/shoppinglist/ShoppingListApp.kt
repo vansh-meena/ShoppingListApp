@@ -67,7 +67,26 @@ fun ShoppingListApp() {
                 .padding(16.dp)
         ) {
             items(sItems) {
-                ShoppingListItem(it, {}, {})
+                item ->if(item.isEditing){
+                    ShoppingItemEditor(item = item, onEditComplete = {
+                        editedName, editedQuantity ->
+                        sItems = sItems.map{ it.copy(isEditing = false)}
+                        val editedItem = sItems.find { it.id == item.id }
+                        editedItem?. let {
+                            it.name = editedName
+                            it.Quantity = editedQuantity
+                        }
+                    })
+            }else{
+                ShoppingListItem(item = item, onEditClick = {
+                    //finding out which item we are editing
+                    sItems = sItems.map { it.copy(isEditing = it.id == item.id) }
+                },
+                    onDeleteClick = {
+                    sItems = sItems - item
+                })
+            }
+
             }
         }
         if (showDialog) {
@@ -161,13 +180,13 @@ fun ShoppingListItem(
     item : ShoppingItem,
     onEditClick : () -> Unit,
     onDeleteClick : () -> Unit
-
 ){
     Row(
         modifier = Modifier.padding(8.dp).fillMaxWidth().border(
             border = BorderStroke(2.dp, Color.Red),
             shape = RoundedCornerShape(20),
-        )
+        ),
+        horizontalArrangement = Arrangement.SpaceBetween
     ){
         Text(text = item.name, modifier = Modifier.padding(8 .dp))
         Text(text = "Qty: ${item.Quantity}", modifier = Modifier.padding(8.dp)) // It is necessary to convert the int into the string before displaying cause the Text only display's string values.
